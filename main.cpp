@@ -12,6 +12,7 @@ struct Log
     float fallSpeed = 0.f;
     float gravity = 0.002f;  // Gravity effect for logs
     bool isActive = true;
+    bool hasScored = false;   // New flag to track if score has been incremented
     int placement = -1;  // 0 for left, 1 for right
 };
 
@@ -39,10 +40,7 @@ bool checkCollision(const sf::Sprite& playerSprite, const Log& log) {
     sf::FloatRect branchBounds = log.branchSprite.getGlobalBounds();
 
     // Check if the player's bounding box intersects with the branch's bounding box
-    if (playerBounds.intersects(branchBounds)) {
-        return true; // Collision detected
-    }
-    return false; // No collision
+    return playerBounds.intersects(branchBounds); // Return true if collision detected
 }
 
 int main()
@@ -89,9 +87,6 @@ int main()
     sf::Sprite playerSprite(playerTexture);
     playerSprite.setPosition(window.getSize().x / 2 - playerSprite.getGlobalBounds().width / 2, window.getSize().y - playerSprite.getGlobalBounds().height);
 
-    // Tint the player sprite blue to visualize the collision
-    // playerSprite.setColor(sf::Color(0, 0, 255, 255)); // Blue tint
-
     // Prepare log and branch sprites
     std::vector<Log> logs;  // Container for logs and branches
     int score = 0;
@@ -133,6 +128,7 @@ int main()
                 Log newLog;
                 newLog.logSprite.setTexture(logTexture);
                 newLog.branchSprite.setTexture(branchTexture);
+                newLog.hasScored = false; // Reset score flag for new log
 
                 // Set the branch sprite color to yellow (adding tint)
                 newLog.branchSprite.setColor(sf::Color(255, 255, 0, 255));  // Yellow tint
@@ -178,8 +174,11 @@ int main()
                     if (checkCollision(playerSprite, log)) {
                         gameOver = true;  // Game over if collision with branch occurs
                     } else {
-                        // Increase score if branch and player are on different sides
-                        score++;
+                        // Increase score if branch and player are on different sides and score hasn't been incremented yet
+                        if (!log.hasScored) {
+                            score++;
+                            log.hasScored = true; // Mark that the score has been incremented for this log
+                        }
                     }
                 }
             }
